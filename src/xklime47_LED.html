@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>RGB led controler</title>
+    <style>
+        body {
+          padding: 10;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+      </style>
+</head>
+<body>
+    <div>
+  <h1>RGB led controler</h1>
+
+  <p>
+    <button id="connectBleButton">Connect</button>
+    <strong><span id="connect" style="color:red;">Disconnected</span></strong>
+    </p>
+
+  <h2>Animations</h2>
+  <p><button id="animation1">Countdown to the start</button></p>
+  <p><button id="animation2">Traffic light</button></p>
+  <p><button id="animation3">Animation 3</button></p>
+  <p><button id="animation4">Animation 4</button></p>
+  <p><button id="animation5">RGB only</button></p>
+
+  <h2>Animation Speed</h2>
+  <button id="speed1">1</button>
+  <button id="speed2">2</button>
+  <button id="speed3">3</button>
+  </div>
+  
+</body>
+<script>
+    const connectButton = document.getElementById('connectBleButton');
+    const connectContainer = document.getElementById('connect');
+
+    // Animation buttons
+    const anim1Button = document.getElementById('animation1');
+    anim1Button.addEventListener('click', () => writeOnCharacteristic(11));
+    const anim2Button = document.getElementById('animation2');
+    anim2Button.addEventListener('click', () => writeOnCharacteristic(12));
+    const anim3Button = document.getElementById('animation3');
+    anim3Button.addEventListener('click', () => writeOnCharacteristic(13));
+    const anim4Button = document.getElementById('animation4');
+    anim4Button.addEventListener('click', () => writeOnCharacteristic(14));
+    const anim5Button = document.getElementById('animation5');
+    anim5Button.addEventListener('click', () => writeOnCharacteristic(15));
+
+    // Speed Buttons
+    const speed1Button = document.getElementById('speed1');
+    speed1Button.addEventListener('click', () => writeOnCharacteristic(1));
+    const speed2Button = document.getElementById('speed2');
+    speed2Button.addEventListener('click', () => writeOnCharacteristic(2));
+    const speed3Button = document.getElementById('speed3');
+    speed3Button.addEventListener('click', () => writeOnCharacteristic(3));
+
+
+    var deviceName ='BLE-Server';
+    var bleService = '00000180-0000-1000-8000-00805f9b34fb';
+    var ledCharacteristic = '0000dead-0000-1000-8000-00805f9b34fb';
+
+    var bleServer;
+    var bleServiceFound;
+    var sensorCharacteristicFound;
+
+    // Connect Button
+    connectButton.addEventListener('click', (event) => {
+            connectToDevice();
+    });
+
+    // Connect to BLE Device and Enable Notifications
+    function connectToDevice(){
+        console.log('Initializing Bluetooth...');
+        navigator.bluetooth.requestDevice({
+            filters: [{name: deviceName}],
+            optionalServices: [bleService]
+        })
+        .then(device => {
+            console.log('Device Selected:', device.name);
+            connectContainer.innerHTML = 'Connected';
+            connectContainer.style.color = "#7CFC00";
+            return device.gatt.connect();
+        })
+        .then(gattServer =>{
+            bleServer = gattServer;
+            console.log("Connected to GATT Server");
+            return bleServer.getPrimaryService(bleService);
+        })
+        .then(service => {
+            bleServiceFound = service;
+            console.log("Service discovered:", service.uuid);
+        })
+        .catch(error => {
+            console.log('Error: ', error);
+        })
+    }
+
+    function writeOnCharacteristic(value){
+        if (bleServer && bleServer.connected) {
+            bleServiceFound.getCharacteristic(ledCharacteristic)
+            .then(characteristic => {
+                console.log("Found the LED characteristic: ", characteristic.uuid);
+                return characteristic.writeValue(new Uint8Array([value]));
+            })
+            .then(() => {
+                console.log("Value written to LEDcharacteristic:", value);
+            })
+            .catch(error => {
+                console.error("Error writing to the LED characteristic: ", error);
+            });
+        } else {
+            console.error ("Bluetooth is not connected.")
+            window.alert("Bluetooth is not connected.")
+        }
+    }
+
+
+</script>
+
+</html>
