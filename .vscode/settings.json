@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "protocomm_ble.h": "c",
+        "esp_nimble_hci.h": "c",
+        "ble_svc_gatt.h": "c",
+        "nimble_port_freertos.h": "c"
+    }
+}
