@@ -2,35 +2,43 @@
 <html>
 <head>
     <title>RGB led controler</title>
+    <meta name="viewport" content="width=device-width">
     <style>
         body {
-          padding: 10;
+          padding: 5px;
           display: flex;
           justify-content: center;
           align-items: center;
         }
+        .button {
+            padding: 10px;
+            font-size: 17px; 
+            text-align: center;
+            border-radius: 4px;
+        }
       </style>
+
 </head>
 <body>
-    <div>
+    <div style="max-width:2000px;margin-top:46px">
   <h1>RGB led controler</h1>
 
   <p>
-    <button id="connectBleButton">Connect</button>
+    <button id="connectBleButton" class="button">Connect</button>
     <strong><span id="connect" style="color:red;">Disconnected</span></strong>
     </p>
 
   <h2>Animations</h2>
-  <p><button id="animation1">Countdown to the start</button></p>
-  <p><button id="animation2">Formula countdown</button></p>
-  <p><button id="animation3">Higway direction light</button></p>
-  <p><button id="animation4">Traffic light</button></p>
-  <p><button id="animation5">RGB only</button></p>
+  <p><button id="animation1" class="button">Countdown to the start</button></p>
+  <p><button id="animation2" class="button">Formula countdown</button></p>
+  <p><button id="animation3" class="button">Higway direction light</button></p>
+  <p><button id="animation4" class="button">Traffic light</button></p>
+  <p><button id="animation5" class="button">RGB only</button></p>
 
   <h2>Animation Speed</h2>
-  <button id="speed1">1</button>
-  <button id="speed2">2</button>
-  <button id="speed3">3</button>
+  <button id="speed1" onclick="changeColor1()" class="button">1</button>
+  <button id="speed2" onclick="changeColor2()" class="button">2</button>
+  <button id="speed3" onclick="changeColor3()" class="button">3</button>
   </div>
   
 </body>
@@ -66,6 +74,24 @@
     var bleServer;
     var bleServiceFound;
     var sensorCharacteristicFound;
+
+    document.getElementById("speed1").style.backgroundColor = "grey";
+
+    function changeColor1() {
+    document.getElementById("speed1").style.backgroundColor = "grey";
+    document.getElementById("speed2").style.backgroundColor = "";
+    document.getElementById("speed3").style.backgroundColor = "";
+  }
+  function changeColor2() {
+    document.getElementById("speed1").style.backgroundColor = "";
+    document.getElementById("speed2").style.backgroundColor = "grey";
+    document.getElementById("speed3").style.backgroundColor = "";
+  }
+  function changeColor3() {
+    document.getElementById("speed1").style.backgroundColor = "";
+    document.getElementById("speed2").style.backgroundColor = "";
+    document.getElementById("speed3").style.backgroundColor = "grey";
+  }
 
     // Connect Button
     connectButton.addEventListener('click', (event) => {
