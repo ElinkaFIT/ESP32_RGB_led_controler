@@ -1,52 +1,59 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>RGB led controler</title>
     <meta name="viewport" content="width=device-width">
     <style>
         body {
-          padding: 5px;
-          display: flex;
-          justify-content: center;
-          align-items: center;
+            padding: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
+
         .button {
             padding: 10px;
-            font-size: 17px; 
+            font-size: 17px;
             text-align: center;
             border-radius: 4px;
         }
-      </style>
+    </style>
 
 </head>
+
 <body>
     <div style="max-width:2000px;margin-top:46px">
-  <h1>RGB led controler</h1>
+        <h1>RGB led controler</h1>
 
-  <p>
-    <button id="connectBleButton" class="button">Connect</button>
-    <strong><span id="connect" style="color:red;">Disconnected</span></strong>
-    </p>
+        <p>
+            <button id="connectBleButton" class="button">Connect</button>
+            <strong><span id="connect" style="color:red;">Disconnected</span></strong>
+        </p>
 
-  <h2>Animations</h2>
-  <p><button id="animation1" class="button">Countdown to the start</button></p>
-  <p><button id="animation2" class="button">Formula countdown</button></p>
-  <p><button id="animation3" class="button">Higway direction light</button></p>
-  <p><button id="animation4" class="button">Traffic light</button></p>
-  <p><button id="animation5" class="button">RGB only</button></p>
+        <h2>Animations</h2>
+        <p><button id="animation1" class="button">Countdown to the start</button></p>
+        <p><button id="animation2" class="button">Formula countdown</button></p>
+        <p><button id="animation3" class="button">Higway direction light</button></p>
+        <p><button id="animation4" class="button">Traffic light</button></p>
+        <p><button id="animation5" class="button">RGB only</button></p>
 
-  <h2>Animation Speed</h2>
-  <button id="speed1" onclick="changeColor1()" class="button">1</button>
-  <button id="speed2" onclick="changeColor2()" class="button">2</button>
-  <button id="speed3" onclick="changeColor3()" class="button">3</button>
-  </div>
-  
+        <h2>Animation Speed</h2>
+        <button id="speed1" onclick="changeColor1()" class="button">1</button>
+        <button id="speed2" onclick="changeColor2()" class="button">2</button>
+        <button id="speed3" onclick="changeColor3()" class="button">3</button>
+    </div>
+
 </body>
 <script>
+    // Conecting buttons
     const connectButton = document.getElementById('connectBleButton');
     const connectContainer = document.getElementById('connect');
+    connectButton.addEventListener('click', (event) => {
+        connectToDevice();
+    });
 
-    // Animation buttons
+    // Animation buttons sending animation code
     const anim1Button = document.getElementById('animation1');
     anim1Button.addEventListener('click', () => writeOnCharacteristic(11));
     const anim2Button = document.getElementById('animation2');
@@ -58,7 +65,7 @@
     const anim5Button = document.getElementById('animation5');
     anim5Button.addEventListener('click', () => writeOnCharacteristic(15));
 
-    // Speed Buttons
+    // Speed buttons sending speed code
     const speed1Button = document.getElementById('speed1');
     speed1Button.addEventListener('click', () => writeOnCharacteristic(1));
     const speed2Button = document.getElementById('speed2');
@@ -66,84 +73,70 @@
     const speed3Button = document.getElementById('speed3');
     speed3Button.addEventListener('click', () => writeOnCharacteristic(3));
 
-
-    var deviceName ='BLE-Server';
-    var bleService = '00000180-0000-1000-8000-00805f9b34fb';
-    var ledCharacteristic = '0000dead-0000-1000-8000-00805f9b34fb';
-
+    // BLE inicialization of UUID
+    var deviceName = 'BLE-Server';
     var bleServer;
+    var bleService = '00000180-0000-1000-8000-00805f9b34fb';
     var bleServiceFound;
-    var sensorCharacteristicFound;
+    var writeCharacteristic = '0000dead-0000-1000-8000-00805f9b34fb';
 
+    // Changing color by selecting speed
     document.getElementById("speed1").style.backgroundColor = "grey";
 
     function changeColor1() {
-    document.getElementById("speed1").style.backgroundColor = "grey";
-    document.getElementById("speed2").style.backgroundColor = "";
-    document.getElementById("speed3").style.backgroundColor = "";
-  }
-  function changeColor2() {
-    document.getElementById("speed1").style.backgroundColor = "";
-    document.getElementById("speed2").style.backgroundColor = "grey";
-    document.getElementById("speed3").style.backgroundColor = "";
-  }
-  function changeColor3() {
-    document.getElementById("speed1").style.backgroundColor = "";
-    document.getElementById("speed2").style.backgroundColor = "";
-    document.getElementById("speed3").style.backgroundColor = "grey";
-  }
-
-    // Connect Button
-    connectButton.addEventListener('click', (event) => {
-            connectToDevice();
-    });
-
-    // Connect to BLE Device and Enable Notifications
-    function connectToDevice(){
-        console.log('Initializing Bluetooth...');
-        navigator.bluetooth.requestDevice({
-            filters: [{name: deviceName}],
-            optionalServices: [bleService]
-        })
-        .then(device => {
-            console.log('Device Selected:', device.name);
-            connectContainer.innerHTML = 'Connected';
-            connectContainer.style.color = "#7CFC00";
-            return device.gatt.connect();
-        })
-        .then(gattServer =>{
-            bleServer = gattServer;
-            console.log("Connected to GATT Server");
-            return bleServer.getPrimaryService(bleService);
-        })
-        .then(service => {
-            bleServiceFound = service;
-            console.log("Service discovered:", service.uuid);
-        })
-        .catch(error => {
-            console.log('Error: ', error);
-        })
+        document.getElementById("speed1").style.backgroundColor = "grey";
+        document.getElementById("speed2").style.backgroundColor = "";
+        document.getElementById("speed3").style.backgroundColor = "";
+    }
+    function changeColor2() {
+        document.getElementById("speed1").style.backgroundColor = "";
+        document.getElementById("speed2").style.backgroundColor = "grey";
+        document.getElementById("speed3").style.backgroundColor = "";
+    }
+    function changeColor3() {
+        document.getElementById("speed1").style.backgroundColor = "";
+        document.getElementById("speed2").style.backgroundColor = "";
+        document.getElementById("speed3").style.backgroundColor = "grey";
     }
 
-    function writeOnCharacteristic(value){
-        if (bleServer && bleServer.connected) {
-            bleServiceFound.getCharacteristic(ledCharacteristic)
-            .then(characteristic => {
-                console.log("Found the LED characteristic: ", characteristic.uuid);
-                return characteristic.writeValue(new Uint8Array([value]));
+
+    // Connecting to BLE
+    function connectToDevice() {
+        navigator.bluetooth.requestDevice({
+            filters: [{ name: deviceName }],
+            optionalServices: [bleService]
+        })
+            .then(device => {
+                connectContainer.innerHTML = 'Connected';
+                connectContainer.style.color = "#7CFC00";
+                return device.gatt.connect();
             })
-            .then(() => {
-                console.log("Value written to LEDcharacteristic:", value);
+            .then(gattServer => {
+                bleServer = gattServer;
+                return bleServer.getPrimaryService(bleService);
+            })
+            .then(service => {
+                bleServiceFound = service;
             })
             .catch(error => {
-                console.error("Error writing to the LED characteristic: ", error);
-            });
+                console.log('Error: ', error);
+            })
+    }
+
+    // Function for send value to ESP
+    function writeOnCharacteristic(value) {
+        if (bleServer && bleServer.connected) {
+            bleServiceFound.getCharacteristic(writeCharacteristic)
+                .then(characteristic => {
+                    return characteristic.writeValue(new Uint8Array([value]));
+                })
+                .catch(error => {
+                    console.error("Error writing: ", error);
+                });
         } else {
-            console.error ("Bluetooth is not connected.")
             window.alert("Bluetooth is not connected.")
         }
     }
-
 
 </script>
 

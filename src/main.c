@@ -1,3 +1,8 @@
+//...................................//
+// Project: IMP - RGB led controler  //
+// Author: Alena Klimecka (xklime47) //
+//...................................//
+
 #include <stdio.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -15,27 +20,32 @@
 #include "sdkconfig.h"
 #include "driver/gpio.h"
 
-#define PROCESS_SIZE 100
-
-#define LED_1 13
-#define LED_2 12
-#define LED_3 14
-
-#define RGB_RED 17
-#define RGB_GREEN 26
-#define RGB_BLUE 25
-
-char *TAG = "BLE-Server";
-uint8_t ble_addr_type;
-void ble_app_advertise(void);
-
+// Queue inicialization
+#define PROCESS_SIZE 100    
 int animation_queue[PROCESS_SIZE];
 int animation_first = -1;
 int animation_last = -1;
 
+// GPIO
+#define LED_1 13
+#define LED_2 12
+#define LED_3 14
+#define RGB_RED 17
+#define RGB_GREEN 26
+#define RGB_BLUE 25
+
+// Service definitions
+char *TAG = "BLE-Server";
+uint8_t ble_addr_type;
+void ble_app_advertise(void);
+
+// Animation speed
 int speed = 1;
 
+
+//...........................//
 // Animation queue functions //
+//...........................//
 
 // Add process to end of the queue
 void addAnimation(int insert_animation)
@@ -48,8 +58,6 @@ void addAnimation(int insert_animation)
         if (animation_first == - 1){
             animation_first = 0;
         }
-        printf("Animation inserted: ");
-        printf("%d \n", insert_animation);
         animation_last = animation_last + 1;
         animation_queue[animation_last] = insert_animation;
     }
@@ -89,6 +97,11 @@ void show_all()
     }
 } 
 
+
+//...............................//
+// Help functions for animations //
+//...............................//
+
 // Initialize led, set the GPIO output
 void set_lights () {
     esp_rom_gpio_pad_select_gpio(LED_1);
@@ -105,8 +118,6 @@ void set_lights () {
     ESP_ERROR_CHECK(gpio_set_direction(RGB_GREEN, GPIO_MODE_OUTPUT));
     ESP_ERROR_CHECK(gpio_set_direction(RGB_BLUE, GPIO_MODE_OUTPUT));
     ESP_ERROR_CHECK(gpio_set_direction(RGB_RED, GPIO_MODE_OUTPUT));
-
-    return;
 }
 
 // Turn off all lights
@@ -118,14 +129,17 @@ void off_lights () {
     ESP_ERROR_CHECK(gpio_set_level(RGB_RED, 0));
     ESP_ERROR_CHECK(gpio_set_level(RGB_BLUE, 0));
     ESP_ERROR_CHECK(gpio_set_level(RGB_GREEN, 0));
-
-    return;
 }
+
+
+//............//
+// Animations //
+//............//
 
 // Animation 1 - Countdown to the start
 void start_countdown () {
-    set_lights();
 
+    set_lights();
     const TickType_t animSpeed = 1000 / portTICK_PERIOD_MS;
 
     ESP_ERROR_CHECK(gpio_set_level(LED_1, 1));
@@ -151,7 +165,6 @@ void start_countdown () {
 void formula_countdown() {
 
     set_lights();
-
     const TickType_t animSpeed = 1000 / portTICK_PERIOD_MS;
 
     ESP_ERROR_CHECK(gpio_set_level(LED_1, 1));
@@ -169,7 +182,6 @@ void formula_countdown() {
 void highway_lights() {
 
     set_lights();
-
     const TickType_t animSpeed = 1000 / portTICK_PERIOD_MS;
 
     ESP_ERROR_CHECK(gpio_set_level(LED_1, 1));
@@ -190,7 +202,6 @@ void highway_lights() {
 void traffic_light() {
 
     set_lights();
-
     const TickType_t animSpeed = 1000 / portTICK_PERIOD_MS;
 
     ESP_ERROR_CHECK(gpio_set_level(RGB_RED, 1));
@@ -206,8 +217,8 @@ void traffic_light() {
 void RGB_only() {
 
     set_lights();
-
     const TickType_t animSpeed = 1000 / portTICK_PERIOD_MS;
+
     // Red
     ESP_ERROR_CHECK(gpio_set_level(RGB_RED, 1));
     vTaskDelay(animSpeed / speed);
@@ -233,13 +244,17 @@ void RGB_only() {
 
 }
 
-// Process Animations 
+
+//......................//
+// Procesing animations //
+//......................//
+
+// Process animations from queue by code
 void process_animations(void *pvParameter) {
 
     int cnt = 1;
 
     while(1) {
-
         switch (show_fist())
         {
         case 11:
@@ -290,7 +305,7 @@ void process_animations(void *pvParameter) {
 
 }
 
-// Write data to ESP32
+// Process animations from html buttons to queue
 static int device_write(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
 {
     int receivedValue = (int)ctxt->om->om_data[0];
@@ -318,7 +333,12 @@ static int device_write(uint16_t conn_handle, uint16_t attr_handle, struct ble_g
     return 0;
 }
 
-// Array of pointers to other service definitions
+
+//....................//
+// Setting aplication //
+//....................//
+
+// Service definitions
 static const struct ble_gatt_svc_def gatt_svcs[] = {
     {.type = BLE_GATT_SVC_TYPE_PRIMARY,
      .uuid = BLE_UUID16_DECLARE(0x180),                
@@ -365,7 +385,6 @@ void ble_app_advertise(void)
     fields.name_len = strlen(device_name);
     fields.name_is_complete = 1;
     ble_gap_adv_set_fields(&fields);
-
     struct ble_gap_adv_params adv_params;
     memset(&adv_params, 0, sizeof(adv_params));
     adv_params.conn_mode = BLE_GAP_CONN_MODE_UND;
@@ -385,6 +404,7 @@ void host_task()
     nimble_port_run(); 
 }
 
+// Main function
 void app_main()
 {
     ESP_ERROR_CHECK(nvs_flash_init());         
